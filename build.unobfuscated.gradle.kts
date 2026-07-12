@@ -55,8 +55,8 @@ dependencies {
 // Loom configuration
 // ---------------------------------------------------------------
 val accesswidener = when {
-    sc.current.parsed >= "26.1" -> "template.unobfuscated.accesswidener"
-    else                        -> "template.obfuscated.accesswidener"
+    sc.current.parsed >= "26.1" -> "flae.unobfuscated.accesswidener"
+    else                        -> "flae.obfuscated.accesswidener"
 }
 
 loom {

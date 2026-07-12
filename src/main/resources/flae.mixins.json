@@ -1,9 +1,9 @@
 {
   "required": true,
-  "package": "com.example.mixin",
+  "package": "net.rs256.flae.mixin",
   "compatibilityLevel": "${java}",
   "mixins": [
-    "ExampleMixin"
+    "FLAEMixin"
   ],
   "injectors": {
     "defaultRequire": 1

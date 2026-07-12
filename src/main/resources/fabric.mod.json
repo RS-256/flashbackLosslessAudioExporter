@@ -9,23 +9,23 @@
   ],
   "contact": {
     "homepage": "https://stonecutter.kikugie.dev/",
-    "sources": "https://codeberg.org/stonecutter/template-fabric"
+    "sources": "https://github.com/RS-256/flashbackLosslessAudioExporter"
   },
   "license": "CC0-1.0",
-  "icon": "assets/template/icon.png",
+  "icon": "assets/flae/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.example.TemplateMod"
+      "net.rs256.flae.FLAEMod"
     ],
     "client": [
-      "com.example.client.TemplateModClient"
+      "net.rs256.flae.client.FLAEModClient"
     ]
   },
   "mixins": [
-    "template.mixins.json",
+    "flae.mixins.json",
     {
-      "config": "templateClient.mixins.json",
+      "config": "flaeClient.mixins.json",
       "environment": "client"
     }
   ],

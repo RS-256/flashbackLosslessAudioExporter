@@ -1,9 +1,9 @@
 {
   "required": true,
-  "package": "com.example.client.mixin",
+  "package": "net.rs256.flae.client.mixin",
   "compatibilityLevel": "${java}",
   "client": [
-    "ExampleClientMixin"
+    "FLAEClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1

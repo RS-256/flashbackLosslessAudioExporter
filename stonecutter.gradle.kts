@@ -21,7 +21,7 @@ stonecutter active "26.1.2"
 stonecutter parameters {
     swaps["mod_version"] = "\"${property("mod.version")}\";"
     swaps["minecraft"]   = "\"${node.metadata.version}\";"
-    constants["release"] = property("mod.id") != "template"
+    constants["release"] = true
     dependencies["fapi"] = node.project.property("deps.fabric_api") as String
 
     // As Mojang has carried out a simple refactoring, this can be resolved simply by replacing the text

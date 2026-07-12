@@ -1,8 +1,8 @@
 # Mod metadata — shared across all versions
-mod.id      = "template"
-mod.name    = "Template"
+mod.id      = "flae"
+mod.name    = "FLAE"
 mod.version = "0.1.0"
-mod.group   = "com.example"
+mod.group   = "net.rs256.flae"
 
 # deps. is used dependency resolving,
 # build. is used build jar resource prosessing
@@ -13,7 +13,7 @@ build.fabric_api    = "*"
 
 publish.modrinth   = "XXXXXXXX"
 publish.curseforge = "XXXXXXXX"
-publish.github     = "RS-256/stonecutter-template-fabric"   #owner/repo
+publish.github     = "RS-256/flashbackLosslessAudioExporter"   #owner/repo
 
 # Per-version properties
 ["1.21.11"]
