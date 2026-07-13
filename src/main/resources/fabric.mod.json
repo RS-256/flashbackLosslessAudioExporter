@@ -3,27 +3,23 @@
   "id": "${id}",
   "version": "${version}",
   "name": "${name}",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Exports the audio of a Flashback export as a lossless 32bit float wav, alongside the video.",
   "authors": [
-    "Me!"
+    "RS256"
   ],
   "contact": {
-    "homepage": "https://stonecutter.kikugie.dev/",
+    "homepage": "https://github.com/RS-256/flashbackLosslessAudioExporter",
     "sources": "https://github.com/RS-256/flashbackLosslessAudioExporter"
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/flae/icon.png",
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
-    "main": [
-      "net.rs256.flae.FLAEMod"
-    ],
     "client": [
       "net.rs256.flae.client.FLAEModClient"
     ]
   },
   "mixins": [
-    "flae.mixins.json",
     {
       "config": "flaeClient.mixins.json",
       "environment": "client"
@@ -33,6 +29,7 @@
   "depends": {
     "fabricloader": "${fabricLoader}",
     "minecraft": "${minecraft}",
-    "${fabricApiKey}": "${fabricAPI}"
+    "${fabricApiKey}": "${fabricAPI}",
+    "flashback": "*"
   }
 }

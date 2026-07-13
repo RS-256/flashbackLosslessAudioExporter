@@ -1,3 +1,38 @@
+# flashbackLosslessAudioExporter (FLAE)
+
+[Flashback](https://github.com/Moulberry/Flashback)のexport実行時に、映像と同じ決定論的な音声を**ロスレスWAV (32bit float PCM, 48kHz)** として並行出力するclient-side Fabric mod。
+
+Flashbackの `AsyncFFmpegVideoWriter#encode` に渡る直前の生 `FloatBuffer`(`ALC_SOFT_loopback` によるオフラインレンダリング結果)をMixinでコピーするだけなので、TPS低下・ラグの影響を受けず、非可逆圧縮も経由しない。詳細は [SPEC.md](SPEC.md) を参照。
+
+## 使い方
+
+1. Flashback・Fabric APIと一緒に導入する
+2. Flashbackのexport画面で `Record Audio` を有効にしてexportする
+3. 動画出力パスと同じ場所に、同名の `.wav` が生成される(例: `take1.mp4` → `take1.wav`)
+
+`Record Audio` が無効の場合は何もしない。WAV書き込みに失敗しても、Flashback本体の動画exportは巻き込まれず継続する。
+
+## 対応バージョン
+
+| Minecraft | Flashback | ビルドスクリプト |
+|-----------|-----------|--------------------------------|
+| 1.21.11   | 0.39.5    | `build.obfuscated.gradle.kts`  |
+| 26.1.2    | 0.40.0    | `build.unobfuscated.gradle.kts`|
+
+依存バージョンはすべて `stonecutter.properties.toml` で管理する(`gradle.properties` には書かない)。
+
+## Minecraft / Flashback バージョン更新時のチェックリスト (SPEC.md §7.3)
+
+本ModはFlashbackの内部クラスにMixinしているため、対応バージョンを追加・更新するたびに以下を確認すること。
+
+- [ ] `AsyncFFmpegVideoWriter` のコンストラクタ(`<init>(ExportSettings, String)`)・`encode(NativeImage, FloatBuffer)`・`finish()`・`close()` のシグネチャが変わっていないか
+- [ ] `ExportSettings` の `recordAudio()` / `stereoAudio()` / `output()` のフィールド名・型が変わっていないか
+- [ ] `flashback.accesswidener` の該当エントリ(`SoundManager#soundEngine` 等)が引き続き存在するか(本Modは直接参照しないが、Flashback側の前提確認として)
+- [ ] サンプルレートが48000Hz固定のままか(`recorder.setSampleRate(48000)` のハードコードが変わっていないか)
+- [ ] `stonecutter.properties.toml` の `deps.flashback` を新バージョンの **Modrinth version ID**(version numberではない)に更新したか。Flashbackは同一version numberをMCバージョンごとに複数公開するため、version numberでのmaven解決は別MC向けjarを掴むことがある。IDは `https://api.modrinth.com/v2/project/flashback/version` で確認できる
+
+---
+
 # Stonecutter Fabric template
 ## Setup
 1. Review the supported Minecraft versions in `settings.gradle.kts`.
@@ -67,4 +102,3 @@ public void registerCommands() {
 //?}
 ```
 if the version specific code is only one line you can omit the bracket, but I recommend not to omit bracket.
-

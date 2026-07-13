@@ -3,12 +3,9 @@
   "package": "net.rs256.flae.client.mixin",
   "compatibilityLevel": "${java}",
   "client": [
-    "FLAEClientMixin"
+    "MixinAsyncFFmpegVideoWriter"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "overwrites": {
-    "requireAnnotations": true
   }
 }

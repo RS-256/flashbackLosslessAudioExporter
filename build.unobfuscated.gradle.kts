@@ -49,6 +49,12 @@ dependencies {
 
     implementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
     implementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric_api")}")
+
+    // Flashback: mixin target. Compile/runtime reference only — never include()d (FR-08, NFR-05).
+    implementation("maven.modrinth:flashback:${property("deps.flashback")}")
+
+    // Mod Menu: dev/test convenience only — not a dependency of this mod.
+    implementation("maven.modrinth:modmenu:${property("deps.modmenu")}")
 }
 
 // ---------------------------------------------------------------

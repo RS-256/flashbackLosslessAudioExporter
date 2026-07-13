@@ -28,6 +28,7 @@ repositories {
     }
     strictMaven("https://www.cursemaven.com",     "CurseForge", "curse.maven")
     strictMaven("https://api.modrinth.com/maven", "Modrinth",   "maven.modrinth")
+    mavenCentral() // com.moulberry:lattice
 }
 
 // ---------------------------------------------------------------
@@ -49,6 +50,53 @@ dependencies {
     mappings(loom.officialMojangMappings())
     modImplementation("net.fabricmc:fabric-loader:${property("deps.fabric_loader")}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("deps.fabric_api")}")
+
+    // Flashback: mixin target. Compile/runtime reference only — never include()d (FR-08, NFR-05).
+    modImplementation("maven.modrinth:flashback:${property("deps.flashback")}")
+
+    // Mod Menu: dev/test convenience only — not a dependency of this mod.
+    modImplementation("maven.modrinth:modmenu:${property("deps.modmenu")}")
+
+    // Lattice (Flashback's config-UI lib) references MC classes, so unlike the other
+    // nested libs it must go through loom's intermediary->named remap for dev runs.
+    modLocalRuntime("com.moulberry:lattice:${property("deps.lattice")}")
+}
+
+// ---------------------------------------------------------------
+// Flashback nests its library mods (mixinconstraints, mixinsquared,
+// lattice, ...) inside META-INF/jars. Loom strips nested jars when
+// remapping modImplementation dependencies, which breaks Flashback's
+// own mixins in dev ("Dynamic selector @MixinSquared:Handler is not
+// registered", missing ConstraintsMixinPlugin). Extract them from the
+// Flashback jar itself and put them back on the dev runtime classpath.
+// ---------------------------------------------------------------
+val flashbackForNestedJars: Configuration = configurations.create("flashbackForNestedJars") {
+    isTransitive = false
+}
+
+dependencies {
+    flashbackForNestedJars("maven.modrinth:flashback:${property("deps.flashback")}")
+}
+
+val extractFlashbackNestedJars = tasks.register<Sync>("extractFlashbackNestedJars") {
+    // resolved eagerly at configuration time: zipTree results serialize fine with the
+    // configuration cache, while deferring via providers would capture the script object
+    from(flashbackForNestedJars.map { zipTree(it) }) {
+        include("META-INF/jars/*.jar")
+        // lattice references MC classes and must be remapped instead: see modLocalRuntime above
+        exclude("META-INF/jars/lattice-*.jar")
+        eachFile { path = name }
+    }
+    includeEmptyDirs = false
+    into(layout.buildDirectory.dir("flashback-nested-jars"))
+}
+
+dependencies {
+    runtimeOnly(
+        files(layout.buildDirectory.dir("flashback-nested-jars").map { dir ->
+            dir.asFileTree.matching { include("*.jar") }
+        }).builtBy(extractFlashbackNestedJars)
+    )
 }
 
 // ---------------------------------------------------------------
