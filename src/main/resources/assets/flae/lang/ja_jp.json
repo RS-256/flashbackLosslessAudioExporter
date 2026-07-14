@@ -1,0 +1,4 @@
+{
+  "flae.export.audio_only": "音声のみ (ロスレスWAV) [FLAE]",
+  "flae.export.audio_only_tooltip": "映像パイプラインを丸ごとスキップし、ロスレスWAV(48kHz/32bit float)のみを出力します。\n動画ファイルは空のプレースホルダとして生成されます。\nカメラ(リスナー)の追従は維持されるため、パン・距離減衰は通常exportと一致します。"
+}

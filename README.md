@@ -12,6 +12,17 @@ Flashbackの `AsyncFFmpegVideoWriter#encode` に渡る直前の生 `FloatBuffer`
 
 `Record Audio` が無効の場合は何もしない。WAV書き込みに失敗しても、Flashback本体の動画exportは巻き込まれず継続する。
 
+## Audio-only export mode (v0.2.0+)
+
+音だけ欲しい場合、映像パイプライン(ワールド描画+FFmpegエンコード)を丸ごとスキップできる。
+
+切替は **export画面のチェックボックス** で行う(`config/flae.json` に永続化)。`Record Audio` を有効にすると、audio codecの下に `音声のみ (ロスレスWAV) [FLAE]` が表示される。
+
+- 有効時、`Record Audio` 付きexportはWAVのみを出力する(動画ファイルは一切生成されない)
+- カメラ(=オーディオリスナー)の追従は維持されるので、距離減衰・パンは通常exportと一致する
+- 進捗UI・ESCキャンセルはそのまま機能する
+- フレームバッファのreadbackだけは安全のため残っているため、export解像度を最小にすると最速になる
+
 ## 対応バージョン
 
 | Minecraft | Flashback | ビルドスクリプト |
@@ -26,6 +37,9 @@ Flashbackの `AsyncFFmpegVideoWriter#encode` に渡る直前の生 `FloatBuffer`
 本ModはFlashbackの内部クラスにMixinしているため、対応バージョンを追加・更新するたびに以下を確認すること。
 
 - [ ] `AsyncFFmpegVideoWriter` のコンストラクタ(`<init>(ExportSettings, String)`)・`encode(NativeImage, FloatBuffer)`・`finish()`・`close()` のシグネチャが変わっていないか
+- [ ] (v0.2.0+) `ExportJob#createVideoWriter(ExportSettings, String)` が存在し、`doExport` 内のワールド描画呼び出し(26.1+: `ExportJob#render(RenderTarget, DeltaTracker.Timer)` / 1.21.x: `GameRenderer#render(DeltaTracker, boolean)`)のターゲットが変わっていないか
+- [ ] (v0.2.0+) `ExportJob#run` 内の `Files.move(temp, output)` と `createVideoWriter` 呼び出しが引き続き `run()` 内に各1箇所か(どちらも `@WrapOperation` のアンカー)。finallyの `Files.deleteIfExists(exportTempFile)` によるtemp掃除が残っているか
+- [ ] (v0.2.0+) `StartExportWindow#render()` 内の audio codec 用 `ImGuiHelper.enumCombo(String, Enum, Enum[])` 呼び出しが引き続き一意か(GUIトグルの注入アンカー)。shaded ImGui のパッケージ名(`imgui.moulberry90`)が変わっていないか
 - [ ] `ExportSettings` の `recordAudio()` / `stereoAudio()` / `output()` のフィールド名・型が変わっていないか
 - [ ] `flashback.accesswidener` の該当エントリ(`SoundManager#soundEngine` 等)が引き続き存在するか(本Modは直接参照しないが、Flashback側の前提確認として)
 - [ ] サンプルレートが48000Hz固定のままか(`recorder.setSampleRate(48000)` のハードコードが変わっていないか)

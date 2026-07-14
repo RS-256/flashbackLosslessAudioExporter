@@ -28,6 +28,7 @@ repositories {
     }
     strictMaven("https://www.cursemaven.com",     "CurseForge", "curse.maven")
     strictMaven("https://api.modrinth.com/maven", "Modrinth",   "maven.modrinth")
+    mavenCentral() // io.github.llamalad7:mixinextras-fabric
 }
 
 // ---------------------------------------------------------------
@@ -55,6 +56,9 @@ dependencies {
 
     // Mod Menu: dev/test convenience only — not a dependency of this mod.
     implementation("maven.modrinth:modmenu:${property("deps.modmenu")}")
+
+    // @WrapOperation etc. — runtime copy is bundled with fabric-loader.
+    compileOnly("io.github.llamalad7:mixinextras-fabric:${property("deps.mixinextras")}")
 }
 
 // ---------------------------------------------------------------

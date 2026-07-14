@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.moulberry.flashback.exporting.AsyncFFmpegVideoWriter;
 import com.moulberry.flashback.exporting.ExportSettings;
 import net.rs256.flae.FLAEMod;
+import net.rs256.flae.audio.WavPaths;
 import net.rs256.flae.audio.WavWriter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -32,7 +33,7 @@ public abstract class MixinAsyncFFmpegVideoWriter {
     private void flae$openWav(ExportSettings settings, String filename, CallbackInfo ci) {
         if (!settings.recordAudio()) return;
 
-        Path wavPath = flae$deriveWavPath(settings.output());
+        Path wavPath = WavPaths.derive(settings.output());
         int channels = settings.stereoAudio() ? 2 : 1;
         try {
             this.flae$wavWriter = new WavWriter(wavPath, channels, FLAE_SAMPLE_RATE);
@@ -81,22 +82,4 @@ public abstract class MixinAsyncFFmpegVideoWriter {
         }
     }
 
-    /**
-     * same directory and base name as the video output, extension swapped
-     * to {@code .wav}. If that collided with the video file itself,
-     * {@code .audio.wav} is appended instead of overwriting it.
-     */
-    @Unique
-    private static Path flae$deriveWavPath(Path videoOutput) {
-        String name = videoOutput.getFileName().toString();
-        int dot = name.lastIndexOf('.');
-        String base = dot > 0 ? name.substring(0, dot) : name;
-
-        Path parent = videoOutput.getParent();
-        Path wavPath = parent != null ? parent.resolve(base + ".wav") : Path.of(base + ".wav");
-        if (wavPath.equals(videoOutput)) {
-            wavPath = parent != null ? parent.resolve(base + ".audio.wav") : Path.of(base + ".audio.wav");
-        }
-        return wavPath;
-    }
 }

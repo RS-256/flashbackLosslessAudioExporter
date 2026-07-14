@@ -3,7 +3,9 @@
   "package": "net.rs256.flae.client.mixin",
   "compatibilityLevel": "${java}",
   "client": [
-    "MixinAsyncFFmpegVideoWriter"
+    "MixinAsyncFFmpegVideoWriter",
+    "MixinExportJob",
+    "MixinStartExportWindow"
   ],
   "injectors": {
     "defaultRequire": 1

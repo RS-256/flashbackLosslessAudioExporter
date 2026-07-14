@@ -1,0 +1,4 @@
+{
+  "flae.export.audio_only": "Audio-only (lossless WAV) [FLAE]",
+  "flae.export.audio_only_tooltip": "Skip the video pipeline entirely and write only the lossless WAV (48kHz 32-bit float).\nThe video file is still created as an empty placeholder.\nCamera/listener tracking is preserved, so panning and distance attenuation match a normal export."
+}

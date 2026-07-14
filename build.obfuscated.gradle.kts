@@ -60,6 +60,9 @@ dependencies {
     // Lattice (Flashback's config-UI lib) references MC classes, so unlike the other
     // nested libs it must go through loom's intermediary->named remap for dev runs.
     modLocalRuntime("com.moulberry:lattice:${property("deps.lattice")}")
+
+    // @WrapOperation etc. — runtime copy is bundled with fabric-loader.
+    compileOnly("io.github.llamalad7:mixinextras-fabric:${property("deps.mixinextras")}")
 }
 
 // ---------------------------------------------------------------

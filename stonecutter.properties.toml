@@ -1,7 +1,7 @@
 # Mod metadata — shared across all versions
 mod.id      = "flae"
 mod.name    = "FLAE"
-mod.version = "0.1.0"
+mod.version = "0.2.0"
 mod.group   = "net.rs256.flae"
 
 # deps. is used dependency resolving,
@@ -10,6 +10,8 @@ deps.fabric_loader  = "0.19.2"
 build.fabric_loader = ">=0.19.2"
 
 build.fabric_api    = "*"
+
+deps.mixinextras    = "0.5.4"            # compileOnly; the runtime copy is bundled with fabric-loader
 
 publish.modrinth   = "XXXXXXXX"
 publish.curseforge = "XXXXXXXX"
