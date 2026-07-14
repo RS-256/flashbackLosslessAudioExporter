@@ -1,63 +1,67 @@
 # flashbackLosslessAudioExporter (FLAE)
 
-[Flashback](https://github.com/Moulberry/Flashback)のexport実行時に、映像と同じ決定論的な音声を**ロスレスWAV (32bit float PCM, 48kHz)** として並行出力するclient-side Fabric mod。
+[日本語](docs/README_jp.md)
 
-Flashbackの `AsyncFFmpegVideoWriter#encode` に渡る直前の生 `FloatBuffer`(`ALC_SOFT_loopback` によるオフラインレンダリング結果)をMixinでコピーするだけなので、TPS低下・ラグの影響を受けず、非可逆圧縮も経由しない。詳細は [SPEC.md](SPEC.md) を参照。
+A client-side Fabric mod that exports the same deterministic audio as [Flashback](https://github.com/Moulberry/Flashback)'s video export in parallel as a **lossless WAV (32-bit float PCM, 48 kHz)** file.
 
-## 使い方
+FLAE simply uses a Mixin to copy the raw `FloatBuffer` passed to `AsyncFFmpegVideoWriter#encode` immediately before encoding (the result of offline rendering via `ALC_SOFT_loopback`). This means the audio is unaffected by TPS drops or lag and never passes through lossy compression. See [SPEC.md](SPEC.md) for details.
 
-1. Flashback・Fabric APIと一緒に導入する
-2. Flashbackのexport画面で `Record Audio` を有効にしてexportする
-3. 動画出力パスと同じ場所に、同名の `.wav` が生成される(例: `take1.mp4` → `take1.wav`)
+## Usage
 
-`Record Audio` が無効の場合は何もしない。WAV書き込みに失敗しても、Flashback本体の動画exportは巻き込まれず継続する。
+1. Install FLAE alongside Flashback and Fabric API.
+2. Enable `Record Audio` on Flashback's export screen and start the export.
+3. A `.wav` file with the same base name is created next to the video output (for example, `take1.mp4` → `take1.wav`).
+
+FLAE does nothing when `Record Audio` is disabled. If writing the WAV file fails, Flashback's video export continues unaffected.
 
 ## Audio-only export mode (v0.2.0+)
 
-音だけ欲しい場合、映像パイプライン(ワールド描画+FFmpegエンコード)を丸ごとスキップできる。
+When you only need audio, FLAE can skip the entire video pipeline (world rendering and FFmpeg encoding).
 
-切替は **export画面のチェックボックス** で行う(`config/flae.json` に永続化)。`Record Audio` を有効にすると、audio codecの下に `音声のみ (ロスレスWAV) [FLAE]` が表示される。
+Toggle this mode with the **checkbox on the export screen** (the setting is persisted in `config/flae.json`). When `Record Audio` is enabled, `Audio only (lossless WAV) [FLAE]` appears below the audio codec option.
 
-- 有効時、`Record Audio` 付きexportはWAVのみを出力する(動画ファイルは一切生成されない)
-- カメラ(=オーディオリスナー)の追従は維持されるので、距離減衰・パンは通常exportと一致する
-- 進捗UI・ESCキャンセルはそのまま機能する
-- フレームバッファのreadbackだけは安全のため残っているため、export解像度を最小にすると最速になる
+- When enabled, exports with `Record Audio` produce only a WAV file (no video file is created).
+- Camera tracking (and therefore the audio listener) remains active, so distance attenuation and panning match a normal export.
+- The progress UI and ESC cancellation continue to work as usual.
+- For safety, framebuffer readback is still performed. Set the export resolution to the minimum for the fastest export.
 
-## WAVフォーマット / サンプルレート (v0.3.0+)
+## WAV format / sample rate (v0.3.0+)
 
-export画面の audio options にプルダウンが追加される(いずれも `config/flae.json` に永続化)。
+The following drop-down menus are added to the audio options on the export screen (both settings are persisted in `config/flae.json`):
 
-- **WAVフォーマット** — 32-bit float (lossless, デフォルト) / 32-bit int / 24-bit int / 16-bit int / 8-bit unsigned。通常export・音声のみexportの両方に適用。整数フォーマットは単純丸めで量子化(ディザなし)
-- **WAVサンプルレート** — 44100 / 48000 (native) / 96000 Hz。**音声のみモード限定**(チェックON時のみ表示)。OpenALループバックデバイス自体を選択レートで開き直すため、FLAE側でのリサンプリングは発生しない。通常exportは常に48000Hz
+- **WAV format** — 32-bit float (lossless, default), 32-bit integer, 24-bit integer, 16-bit integer, or 8-bit unsigned integer. Applies to both normal and audio-only exports. Integer formats are quantized using simple rounding without dithering.
+- **WAV sample rate** — 44,100, 48,000 (native), or 96,000 Hz. Available **only in audio-only mode** (shown only when the checkbox is enabled). The OpenAL loopback device itself is reopened at the selected rate, so FLAE performs no resampling. Normal exports always use 48,000 Hz.
 
-## 対応バージョン
+## Supported versions
 
-| Minecraft | Flashback | ビルドスクリプト |
-|-----------|-----------|--------------------------------|
-| 1.21.11   | 0.39.5    | `build.obfuscated.gradle.kts`  |
-| 26.1.2    | 0.40.0    | `build.unobfuscated.gradle.kts`|
+| Minecraft | Flashback | Build script                    |
+|-----------|-----------|---------------------------------|
+| 1.21.11   | 0.39.5    | `build.obfuscated.gradle.kts`   |
+| 26.1.2    | 0.40.0    | `build.unobfuscated.gradle.kts` |
 
-依存バージョンはすべて `stonecutter.properties.toml` で管理する(`gradle.properties` には書かない)。
+All dependency versions are managed in `stonecutter.properties.toml` (do not add them to `gradle.properties`).
 
-## Minecraft / Flashback バージョン更新時のチェックリスト (SPEC.md §7.3)
+## Checklist for Minecraft / Flashback version updates (SPEC.md §7.3)
 
-本ModはFlashbackの内部クラスにMixinしているため、対応バージョンを追加・更新するたびに以下を確認すること。
+This mod uses Mixins targeting Flashback's internal classes. Check all of the following whenever adding or updating a supported version:
 
-- [ ] `AsyncFFmpegVideoWriter` のコンストラクタ(`<init>(ExportSettings, String)`)・`encode(NativeImage, FloatBuffer)`・`finish()`・`close()` のシグネチャが変わっていないか
-- [ ] (v0.2.0+) `ExportJob#createVideoWriter(ExportSettings, String)` が存在し、`doExport` 内のワールド描画呼び出し(26.1+: `ExportJob#render(RenderTarget, DeltaTracker.Timer)` / 1.21.x: `GameRenderer#render(DeltaTracker, boolean)`)のターゲットが変わっていないか
-- [ ] (v0.2.0+) `ExportJob#run` 内の `Files.move(temp, output)` と `createVideoWriter` 呼び出しが引き続き `run()` 内に各1箇所か(どちらも `@WrapOperation` のアンカー)。finallyの `Files.deleteIfExists(exportTempFile)` によるtemp掃除が残っているか
-- [ ] (v0.2.0+) `StartExportWindow#render()` 内の audio codec 用 `ImGuiHelper.enumCombo(String, Enum, Enum[])` 呼び出しが引き続き一意か(GUIトグルの注入アンカー)。shaded ImGui のパッケージ名(`imgui.moulberry90`)が変わっていないか
-- [ ] (v0.3.0+) Flashback `MixinAudioLibrary` が `Library#init` の `alcCreateContext` をラップして属性 `{FORMAT_TYPE: FLOAT, CHANNELS, FREQUENCY: 48000}` を直書きする構造のままか(FLAEの `MixinLibrary` はこれを priority 1100 で外側からラップしている)
-- [ ] (v0.3.0+) `ExportJob#doExport` 内にサンプル数計算の `48000.0` 定数が残っているか(`@ModifyConstant` のマッチ対象)
-- [ ] `ExportSettings` の `recordAudio()` / `stereoAudio()` / `output()` のフィールド名・型が変わっていないか
-- [ ] `flashback.accesswidener` の該当エントリ(`SoundManager#soundEngine` 等)が引き続き存在するか(本Modは直接参照しないが、Flashback側の前提確認として)
-- [ ] サンプルレートが48000Hz固定のままか(`recorder.setSampleRate(48000)` のハードコードが変わっていないか)
-- [ ] `stonecutter.properties.toml` の `deps.flashback` を新バージョンの **Modrinth version ID**(version numberではない)に更新したか。Flashbackは同一version numberをMCバージョンごとに複数公開するため、version numberでのmaven解決は別MC向けjarを掴むことがある。IDは `https://api.modrinth.com/v2/project/flashback/version` で確認できる
+- [ ] Confirm that the signatures of the `AsyncFFmpegVideoWriter` constructor (`<init>(ExportSettings, String)`), `encode(NativeImage, FloatBuffer)`, `finish()`, and `close()` have not changed.
+- [ ] (v0.2.0+) Confirm that `ExportJob#createVideoWriter(ExportSettings, String)` exists and that the target of the world-rendering call in `doExport` has not changed (26.1+: `ExportJob#render(RenderTarget, DeltaTracker.Timer)` / 1.21.x: `GameRenderer#render(DeltaTracker, boolean)`).
+- [ ] (v0.2.0+) Confirm that `ExportJob#run` still contains exactly one `Files.move(temp, output)` call and one `createVideoWriter` call (both are anchors for `@WrapOperation`). Also confirm that the `finally` block still cleans up the temporary file with `Files.deleteIfExists(exportTempFile)`.
+- [ ] (v0.2.0+) Confirm that the audio-codec call to `ImGuiHelper.enumCombo(String, Enum, Enum[])` is still unique within `StartExportWindow#render()` (it is the injection anchor for the GUI toggle), and that the shaded ImGui package name (`imgui.moulberry90`) has not changed.
+- [ ] (v0.3.0+) Confirm that Flashback's `MixinAudioLibrary` still wraps `alcCreateContext` in `Library#init` and directly supplies the attributes `{FORMAT_TYPE: FLOAT, CHANNELS, FREQUENCY: 48000}` (FLAE's `MixinLibrary` wraps this from the outside with priority 1100).
+- [ ] (v0.3.0+) Confirm that the `48000.0` constant used to calculate the sample count remains in `ExportJob#doExport` (the match target for `@ModifyConstant`).
+- [ ] Confirm that the names and types of the `recordAudio()`, `stereoAudio()`, and `output()` fields in `ExportSettings` have not changed.
+- [ ] Confirm that the relevant entries in `flashback.accesswidener` (such as `SoundManager#soundEngine`) still exist. FLAE does not reference them directly, but they are assumptions made by Flashback.
+- [ ] Confirm that the sample rate is still fixed at 48,000 Hz (check whether `recorder.setSampleRate(48000)` remains hard-coded).
+- [ ] Update `deps.flashback` in `stonecutter.properties.toml` to the new version's **Modrinth version ID** (not its version number). Flashback publishes the same version number multiple times for different Minecraft versions, so resolving Maven dependencies by version number can retrieve a JAR for the wrong Minecraft version. IDs are available from `https://api.modrinth.com/v2/project/flashback/version`.
 
 ---
 
 # Stonecutter Fabric template
+
 ## Setup
+
 1. Review the supported Minecraft versions in `settings.gradle.kts`.
    For new entries, add `versions/.../gradle.properties` with the same keys as other versions.
 2. Change `mod.group`, `mod.id` and `mod.name` properties in `gradle.properties`.
@@ -67,45 +71,50 @@ export画面の audio options にプルダウンが追加される(いずれも 
    See the [license decision diagram](https://docs.codeberg.org/getting-started/licensing/#license-decision-diagram) for common options.
 6. Review `src/main/resources/fabric.mod.json` to have up-to-date properties.
 
-## Usage
-- Use `"Set active project to ..."` Gradle tasks to update the Minecraft version
-  available in `src/` classes.
-- Use `buildAndCollect` Gradle task to store mod releases in `build/libs/`.
-- Enable `mod-publish-plugin` in `stonecutter.gradle.kts` and `build.gradle.kts`
-  and the corresponding code blocks to publish releases to Modrinth and Curseforge.
-- Enable `maven-publish` in `build.gradle.kts` and the corresponding code block
-  to publish releases to a personal maven repository.
+## Template usage
+
+- Use the `Set active project to ...` Gradle tasks to change the Minecraft version available to the classes in `src/`.
+- Use the `buildAndCollect` Gradle task to store mod releases in `build/libs/`.
+- To publish releases to Modrinth and CurseForge, enable `mod-publish-plugin` and the corresponding code blocks in `stonecutter.gradle.kts` and `build.gradle.kts`.
+- To publish releases to a personal Maven repository, enable `maven-publish` and the corresponding code block in `build.gradle.kts`.
 
 ## Useful links
+
 - [Stonecutter beginner's guide](https://stonecutter.kikugie.dev/wiki/start/): *spoiler: you* ***need*** *to understand how it works!*
 - [Fabric Discord server](https://discord.gg/v6v4pMv): for mod development help.
 - [Stonecutter Discord server](https://discord.kikugie.dev/): for Stonecutter and Gradle help.
 - [How To Ask Questions - the guide](http://www.catb.org/esr/faqs/smart-questions.html): also in [video form](https://www.youtube.com/results?search_query=How+To+Ask+Questions+The+Smart+Way).
 
 ## Commonly used syntax
-### minecraft version specific code
-you can use `if` block in your source code (not in the build script) to apply or remove minecraft version specific code.
-When the stonecutter evaluate the codes, for example; reload the gradle, building, ofc runClient or something else, 
-if the current active version (defined at `stonecutter.gradle.kts#L15`) does not meet the conditions, that code is commented out in a comment block
+
+### Minecraft version-specific code
+
+You can use an `if` block in source code (but not in build scripts) to apply or remove Minecraft version-specific code. 
+When Stonecutter evaluates the code—for example, when Gradle is reloaded, the project is built, or `runClient` is run—code whose conditions do not match the active version (defined at `stonecutter.gradle.kts#L15`) is commented out.
+
 ```java
-//some code...
+// some code...
 //? if >=1.21.3 {
-//version specific code...
+// version-specific code...
 //?}
-// another some code...
+// more code...
 ```
-ofc you can also use `else` and `else if` block, like this.
+
+ofc you can also use `else` and `else if` blocks:
+
 ```java
 public static MutableComponent literal(String string) {
     //? if <=1.18.2 {
-    // only uncommented and can be evaluated if current version is under 1.18.2 (<=1.18.2)
+    // only uncommented and evaluated when the current version is 1.18.2 or earlier (<=1.18.2)
     /*return new TextComponent(string);
      *///?} else {
     return Component.literal(string);
     //?}
 }
 ```
-and you can nest the `if` block up to 10 times.
+
+`if` blocks can be nested up to 10 levels deep:
+
 ```java
 //? if <=1.18.2 {
 /*public void registerCommands() {
@@ -116,7 +125,7 @@ public void registerCommands() {
 	CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 		TemplateCommand.register(dispatcher, registryAccess);
 		//? if >=1.20.3 {
-        // only uncommented and can be evaluated if current version is >=1.18.2 && 1.20.3
+        // only uncommented and evaluated when the current version is >= 1.20.3
 
         ExampleCommand.register(dispatcher);
 		//?}
@@ -124,4 +133,5 @@ public void registerCommands() {
 }
 //?}
 ```
-if the version specific code is only one line you can omit the bracket, but I recommend not to omit bracket.
+
+Braces may be omitted when a version-specific block contains only one line, but keeping them is recommended.
