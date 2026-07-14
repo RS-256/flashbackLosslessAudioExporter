@@ -80,6 +80,7 @@ tasks.register("publishAllToModrinthRelease") {
     description = "Publish all release versions to Modrinth in order."
     dependsOn(releaseVersions.map { ":$it:publishModrinth" })
 }
+*/
 
 @DisableCachingByDefault(because = "Publishes artifacts to GitHub Releases.")
 abstract class PublishGithubReleaseTask : DefaultTask() {
@@ -212,6 +213,7 @@ tasks.register<PublishGithubReleaseTask>("publishGithubRelease") {
     jarPaths.set(githubReleaseJarFiles)
 }
 
+/*
 gradle.projectsEvaluated {
     releaseVersions.zipWithNext().forEach { (prev, next) ->
         project(":$next").tasks.named("publishModrinth") {
