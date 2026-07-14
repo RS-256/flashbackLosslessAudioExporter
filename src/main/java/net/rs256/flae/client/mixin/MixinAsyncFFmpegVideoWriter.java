@@ -3,7 +3,9 @@ package net.rs256.flae.client.mixin;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.moulberry.flashback.exporting.AsyncFFmpegVideoWriter;
 import com.moulberry.flashback.exporting.ExportSettings;
+import net.rs256.flae.FLAEConfig;
 import net.rs256.flae.FLAEMod;
+import net.rs256.flae.audio.WavFormat;
 import net.rs256.flae.audio.WavPaths;
 import net.rs256.flae.audio.WavWriter;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,10 +37,13 @@ public abstract class MixinAsyncFFmpegVideoWriter {
 
         Path wavPath = WavPaths.derive(settings.output());
         int channels = settings.stereoAudio() ? 2 : 1;
+        WavFormat format = FLAEConfig.get().wavFormat;
         try {
-            this.flae$wavWriter = new WavWriter(wavPath, channels, FLAE_SAMPLE_RATE);
-            FLAEMod.LOGGER.info("[{}] Mirroring lossless audio ({}ch, 32bit float, {}Hz) to {}",
-                    FLAEMod.MOD_ID, channels, FLAE_SAMPLE_RATE, wavPath);
+            // rate stays 48000 here: this tap mirrors the exact buffers FFmpeg gets,
+            // and normal (video) exports always render at Flashback's native rate
+            this.flae$wavWriter = new WavWriter(wavPath, channels, FLAE_SAMPLE_RATE, format);
+            FLAEMod.LOGGER.info("[{}] Mirroring audio ({}ch, {}, {}Hz) to {}",
+                    FLAEMod.MOD_ID, channels, format.label(), FLAE_SAMPLE_RATE, wavPath);
         } catch (IOException e) {
             FLAEMod.LOGGER.error("[{}] Could not open {} — lossless audio disabled for this export",
                     FLAEMod.MOD_ID, wavPath, e);

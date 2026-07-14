@@ -1,4 +1,8 @@
 {
   "flae.export.audio_only": "音声のみ (ロスレスWAV) [FLAE]",
-  "flae.export.audio_only_tooltip": "映像パイプラインを丸ごとスキップし、ロスレスWAV(48kHz/32bit float)のみを出力します。\n動画ファイルは空のプレースホルダとして生成されます。\nカメラ(リスナー)の追従は維持されるため、パン・距離減衰は通常exportと一致します。"
+  "flae.export.audio_only_tooltip": "映像パイプラインを丸ごとスキップし、ロスレスWAVのみを出力します。\n動画ファイルは生成されません。\nカメラ(リスナー)の追従は維持されるため、パン・距離減衰は通常exportと一致します。",
+  "flae.export.wav_format": "WAVフォーマット [FLAE]",
+  "flae.export.wav_format_tooltip": "書き出すWAVのサンプルフォーマット(通常export・音声のみexportの両方に適用)。\n32-bit floatが無加工のロスレスデータで、整数フォーマットは量子化されます(単純丸め、ディザなし)。",
+  "flae.export.wav_sample_rate": "WAVサンプルレート [FLAE]",
+  "flae.export.wav_sample_rate_tooltip": "音声のみexportではOpenALループバックデバイスをこのレートで開き直し、ゲーム自体がネイティブにミックスします(FLAEはリサンプリングしません)。\n通常(映像あり)exportは常にFlashbackネイティブの48000 Hzです。"
 }

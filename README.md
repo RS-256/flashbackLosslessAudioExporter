@@ -23,6 +23,13 @@ Flashbackの `AsyncFFmpegVideoWriter#encode` に渡る直前の生 `FloatBuffer`
 - 進捗UI・ESCキャンセルはそのまま機能する
 - フレームバッファのreadbackだけは安全のため残っているため、export解像度を最小にすると最速になる
 
+## WAVフォーマット / サンプルレート (v0.3.0+)
+
+export画面の audio options にプルダウンが追加される(いずれも `config/flae.json` に永続化)。
+
+- **WAVフォーマット** — 32-bit float (lossless, デフォルト) / 32-bit int / 24-bit int / 16-bit int / 8-bit unsigned。通常export・音声のみexportの両方に適用。整数フォーマットは単純丸めで量子化(ディザなし)
+- **WAVサンプルレート** — 44100 / 48000 (native) / 96000 Hz。**音声のみモード限定**(チェックON時のみ表示)。OpenALループバックデバイス自体を選択レートで開き直すため、FLAE側でのリサンプリングは発生しない。通常exportは常に48000Hz
+
 ## 対応バージョン
 
 | Minecraft | Flashback | ビルドスクリプト |
@@ -40,6 +47,8 @@ Flashbackの `AsyncFFmpegVideoWriter#encode` に渡る直前の生 `FloatBuffer`
 - [ ] (v0.2.0+) `ExportJob#createVideoWriter(ExportSettings, String)` が存在し、`doExport` 内のワールド描画呼び出し(26.1+: `ExportJob#render(RenderTarget, DeltaTracker.Timer)` / 1.21.x: `GameRenderer#render(DeltaTracker, boolean)`)のターゲットが変わっていないか
 - [ ] (v0.2.0+) `ExportJob#run` 内の `Files.move(temp, output)` と `createVideoWriter` 呼び出しが引き続き `run()` 内に各1箇所か(どちらも `@WrapOperation` のアンカー)。finallyの `Files.deleteIfExists(exportTempFile)` によるtemp掃除が残っているか
 - [ ] (v0.2.0+) `StartExportWindow#render()` 内の audio codec 用 `ImGuiHelper.enumCombo(String, Enum, Enum[])` 呼び出しが引き続き一意か(GUIトグルの注入アンカー)。shaded ImGui のパッケージ名(`imgui.moulberry90`)が変わっていないか
+- [ ] (v0.3.0+) Flashback `MixinAudioLibrary` が `Library#init` の `alcCreateContext` をラップして属性 `{FORMAT_TYPE: FLOAT, CHANNELS, FREQUENCY: 48000}` を直書きする構造のままか(FLAEの `MixinLibrary` はこれを priority 1100 で外側からラップしている)
+- [ ] (v0.3.0+) `ExportJob#doExport` 内にサンプル数計算の `48000.0` 定数が残っているか(`@ModifyConstant` のマッチ対象)
 - [ ] `ExportSettings` の `recordAudio()` / `stereoAudio()` / `output()` のフィールド名・型が変わっていないか
 - [ ] `flashback.accesswidener` の該当エントリ(`SoundManager#soundEngine` 等)が引き続き存在するか(本Modは直接参照しないが、Flashback側の前提確認として)
 - [ ] サンプルレートが48000Hz固定のままか(`recorder.setSampleRate(48000)` のハードコードが変わっていないか)

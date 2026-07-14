@@ -1,7 +1,7 @@
 # Mod metadata — shared across all versions
 mod.id      = "flae"
 mod.name    = "FLAE"
-mod.version = "0.2.0"
+mod.version = "0.3.0"
 mod.group   = "net.rs256.flae"
 
 # deps. is used dependency resolving,

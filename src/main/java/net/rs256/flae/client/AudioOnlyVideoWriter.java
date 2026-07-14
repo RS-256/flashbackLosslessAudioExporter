@@ -3,7 +3,9 @@ package net.rs256.flae.client;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.moulberry.flashback.exporting.ExportSettings;
 import com.moulberry.flashback.exporting.VideoWriter;
+import net.rs256.flae.FLAEConfig;
 import net.rs256.flae.FLAEMod;
+import net.rs256.flae.audio.WavFormat;
 import net.rs256.flae.audio.WavPaths;
 import net.rs256.flae.audio.WavWriter;
 
@@ -35,9 +37,14 @@ public final class AudioOnlyVideoWriter implements VideoWriter {
 
         Path wavPath = WavPaths.derive(settings.output());
         int channels = settings.stereoAudio() ? 2 : 1;
-        this.wavWriter = new WavWriter(wavPath, channels, 48000);
-        FLAEMod.LOGGER.info("[{}] Audio-only export: writing {}ch 32bit float wav to {} (video pipeline disabled)",
-                FLAEMod.MOD_ID, channels, wavPath);
+        // In audio-only mode the loopback device really renders at this rate
+        // (MixinLibrary) and ExportJob's per-frame sample count follows it
+        // (MixinExportJob's @ModifyConstant), so no resampling happens anywhere.
+        int sampleRate = FLAEConfig.get().audioOnlySampleRate;
+        WavFormat format = FLAEConfig.get().wavFormat;
+        this.wavWriter = new WavWriter(wavPath, channels, sampleRate, format);
+        FLAEMod.LOGGER.info("[{}] Audio-only export: writing {}ch {} {}Hz wav to {} (video pipeline disabled)",
+                FLAEMod.MOD_ID, channels, format.label(), sampleRate, wavPath);
     }
 
     @Override

@@ -1,4 +1,8 @@
 {
   "flae.export.audio_only": "Audio-only (lossless WAV) [FLAE]",
-  "flae.export.audio_only_tooltip": "Skip the video pipeline entirely and write only the lossless WAV (48kHz 32-bit float).\nThe video file is still created as an empty placeholder.\nCamera/listener tracking is preserved, so panning and distance attenuation match a normal export."
+  "flae.export.audio_only_tooltip": "Skip the video pipeline entirely and write only the lossless WAV.\nNo video file is produced.\nCamera/listener tracking is preserved, so panning and distance attenuation match a normal export.",
+  "flae.export.wav_format": "WAV format [FLAE]",
+  "flae.export.wav_format_tooltip": "Sample format of the written WAV, for both normal and audio-only exports.\n32-bit float is the untouched lossless data; the integer formats quantize (plain rounding, no dither).",
+  "flae.export.wav_sample_rate": "WAV sample rate [FLAE]",
+  "flae.export.wav_sample_rate_tooltip": "Audio-only exports reopen the OpenAL loopback device at this rate, so the game mixes natively at it — FLAE never resamples.\nNormal (video) exports always run at Flashback's native 48000 Hz."
 }

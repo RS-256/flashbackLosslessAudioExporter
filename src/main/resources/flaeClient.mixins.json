@@ -5,6 +5,7 @@
   "client": [
     "MixinAsyncFFmpegVideoWriter",
     "MixinExportJob",
+    "MixinLibrary",
     "MixinStartExportWindow"
   ],
   "injectors": {

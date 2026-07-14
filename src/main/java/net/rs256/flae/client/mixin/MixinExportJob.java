@@ -12,6 +12,8 @@ import net.rs256.flae.client.AudioOnlyVideoWriter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 import java.io.IOException;
 import java.nio.file.CopyOption;
@@ -77,6 +79,19 @@ public abstract class MixinExportJob {
             return source;
         }
         return original.call(source, target, options);
+    }
+
+    /**
+     * ExportJob computes the per-frame sample count as {@code 48000.0 / framerate}.
+     * When the audio-only loopback context runs at a custom rate (MixinLibrary),
+     * the sample count must follow it, or the wav would come out time-stretched.
+     */
+    @ModifyConstant(method = "doExport", constant = @Constant(doubleValue = 48000.0))
+    private double flae$perFrameSampleRate(double original) {
+        if (flae$audioOnlyActive()) {
+            return FLAEConfig.get().audioOnlySampleRate;
+        }
+        return original;
     }
 
     //? if <26.1 {

@@ -1,3 +1,14 @@
+# v0.3.0
+
+## WAV format & sample rate options
+
+- `WAV format [FLAE]` dropdown in the export dialog: 32-bit float (lossless, default) / 32-bit int / 24-bit int / 16-bit int / 8-bit unsigned PCM
+  - applies to the wav in both normal and audio-only exports
+  - integer formats quantize with plain rounding + clamp (no dither); PCM headers drop the fact chunk (44 bytes)
+- `WAV sample rate [FLAE]` dropdown (audio-only mode only): 44100 / 48000 (native) / 96000 Hz
+  - the OpenAL loopback device is reopened at the selected rate, so the game mixes natively at it — FLAE never resamples
+  - normal (video) exports always stay at Flashback's native 48000 Hz
+
 # v0.2.0
 
 ## Audio-only export mode
